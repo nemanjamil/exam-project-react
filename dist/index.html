@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+
+  <link rel="manifest" href="./public/manifest.json">
+  <link rel="shortcut icon" href="./public/favicon.ico">
+
+
+  <title>ICO - International Certification Organisation</title>
+</head>
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <video hidden id="video" width="640" height="480" autoplay></video>
+  <canvas hidden id="canvas" width="640" height="480"></canvas>
+  <div id="app">
+  </div>
+  <script src="./public/socketio/socket.io.slim.js"></script>
+
+  <script>
+  var video = document.getElementById('video');
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext('2d');
+  var img = new Image();
+  var socket = io.connect('https://se04.ico-cert.org',{path: '/frms-api/socket.io'});
+
+  canvas.hidden = true;
+  video.hidden = true;
+
+
+  var video = document.getElementById('video');
+
+  // Get access to the camera!
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream) {
+      video.srcObject = stream;
+      video.play();
+    });
+  } else {
+    console.log("Webcam failed!");
+  }
+
+  // Trigger photo take
+  setInterval(function() {
+    var data = {pic: canvas.toDataURL().replace("data:image/png;base64,", ""), jwt: getCookie('jwt')}
+    context.drawImage(video, 0, 0, 640, 480);
+    socket.emit('pic', data);
+  }, 10000);
+
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+  </script>
+<script type="text/javascript" src="main.js"></script></body>
+</html>
